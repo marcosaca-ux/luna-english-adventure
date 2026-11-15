@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luna English Adventure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: one phone-width column. A fixed "stage" (Luna + speech bubble) on top, the game view below. Single light theme by choice: a soft morning sky. */
+:root{
+  color-scheme: light;
+  --sky:#e6f3ff; --sky2:#fff3ea; --ink:#2e2a55; --soft:#6b6791;
+  --card:#ffffff; --line:#d9def2;
+  --berry:#e2557f; --grape:#7a5cd6; --mint:#22b598; --sun:#ffc533; --peach:#ffd9c7;
+  --fur:#fff6dc; --pink:#ffb3c7;
+  --ok:#1fa67a; --okbg:#dff7ec; --no:#e2557f; --nobg:#ffe6ee;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  --r:20px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 100%) fixed;background-color:var(--sky);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.4}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--grape);outline-offset:2px}
+#app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:0 16px 28px}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:10px;padding:12px 0 6px}
+.bar h1{font-family:var(--display);font-weight:800;font-size:22px;margin:0;flex:1;line-height:1.1;text-wrap:balance}
+.bar h1 small{display:block;font-family:var(--body);font-size:13px;font-weight:700;color:var(--soft)}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800;min-height:44px;display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.iconbtn{width:44px;height:44px;border-radius:50%;background:var(--card);border:2px solid var(--line);font-size:20px;display:grid;place-items:center}
+
+/* stage */
+.stage{display:flex;align-items:flex-end;gap:8px;padding:6px 0 12px;position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--sky) 78%,rgba(230,243,255,0))}
+.lunaBtn{flex:0 0 96px;width:96px;padding:0}
+.luna{width:96px;height:88px;display:block;filter:drop-shadow(0 4px 0 rgba(122,92,214,.18))}
+.luna .eyes-laugh,.luna .mouth-talk,.luna .mouth-laugh{display:none}
+.luna .eyes-open{transform-origin:60px 56px;animation:blink 4.5s infinite}
+.talking .luna .mouth-smile{display:none}
+.talking .luna .mouth-talk{display:block;transform-origin:60px 79px;animation:talk .28s infinite alternate}
+.laugh .luna .eyes-open,.laugh .luna .mouth-smile,.laugh .luna .mouth-talk{display:none}
+.laugh .luna .eyes-laugh,.laugh .luna .mouth-laugh{display:block}
+.laugh .luna{animation:wobble .18s 6 alternate}
+.happy .luna{animation:hop .5s 1}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes talk{from{transform:scaleY(.35)}to{transform:scaleY(1.15)}}
+@keyframes wobble{from{transform:rotate(-7deg) translateY(0)}to{transform:rotate(7deg) translateY(-5px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px)}}
+.bubble{flex:1;background:var(--card);border:2px solid var(--line);border-radius:var(--r);border-bottom-left-radius:6px;padding:12px 14px;font-weight:700;min-height:64px;position:relative}
+.bubble .en{font-family:var(--display);font-weight:800;font-size:19px;color:var(--grape);display:block;line-height:1.15}
+.bubble .pt{display:block;color:var(--ink);font-size:15.5px}
+.bubble.jokey{background:#fff8d9;border-color:var(--sun)}
+
+/* home */
+.world{margin-top:14px}
+.world h2{font-family:var(--display);font-weight:800;font-size:21px;margin:0 0 2px;display:flex;align-items:baseline;gap:8px}
+.world h2 span{font-family:var(--body);font-size:13px;font-weight:800;color:var(--soft)}
+.world p{margin:0 0 10px;color:var(--soft);font-size:14.5px;font-weight:700}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border:2px solid var(--line);border-bottom-width:5px;border-radius:var(--r);padding:12px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:112px}
+.tile:active{transform:translateY(2px);border-bottom-width:3px}
+.tile .ic{font-size:30px;line-height:1}
+.tile b{font-family:var(--display);font-size:17px;line-height:1.1}
+.tile i{font-style:normal;font-size:13px;color:var(--soft);font-weight:700}
+.tile .st{margin-top:auto;font-size:15px;letter-spacing:2px;color:var(--sun)}
+.tile .st .off{color:var(--line)}
+.w7 .tile{border-color:#bfe9df}.w8 .tile{border-color:#d6cbf6}
+.tile.done{background:linear-gradient(180deg,#fff,#fffbe8)}
+.foot{margin-top:22px;font-size:13.5px;color:var(--soft);font-weight:700;border-top:2px dashed var(--line);padding-top:12px}
+
+/* welcome */
+.welcome{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.welcome label{font-weight:800}
+.welcome input{font:inherit;font-weight:800;padding:12px 14px;border-radius:14px;border:2px solid var(--line);width:100%;color:var(--ink);background:#fbfcff}
+.big{background:var(--grape);color:#fff;font-family:var(--display);font-weight:800;font-size:21px;border-radius:999px;padding:12px 20px;min-height:54px;border-bottom:5px solid #5a3fb4;width:100%}
+.big:active{transform:translateY(2px);border-bottom-width:3px}
+.big.mint{background:var(--mint);border-bottom-color:#168a73}
+.big.ghost{background:var(--card);color:var(--ink);border:2px solid var(--line);border-bottom-width:5px}
+.big[disabled]{opacity:.45}
+
+/* game */
+.prog{height:12px;background:var(--card);border:2px solid var(--line);border-radius:99px;overflow:hidden;margin:2px 0 12px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--sun));border-radius:99px;transition:width .4s}
+.qcard{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:16px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.qcard .em{font-size:56px;line-height:1.05}
+.qcard .q{font-family:var(--display);font-weight:800;font-size:24px;line-height:1.2;text-wrap:balance}
+.qcard .sub{color:var(--soft);font-weight:700;font-size:15px}
+.blank{display:inline-block;min-width:74px;border-bottom:4px dotted var(--grape);color:var(--grape);padding:0 4px}
+.blank.fill{border-bottom-style:solid;border-color:var(--ok);color:var(--ok)}
+.hear{display:flex;gap:8px;justify-content:center;margin-top:4px}
+.hear button{background:#f1edff;border:2px solid #d6cbf6;border-radius:999px;padding:8px 14px;font-weight:800;min-height:44px}
+.opts{display:grid;gap:10px;margin-top:12px}
+.opts.g2{grid-template-columns:1fr 1fr}
+.opt{background:var(--card);border:2px solid var(--line);border-bottom-width:5px;border-radius:18px;padding:12px;font-weight:800;font-size:19px;min-height:60px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center}
+.opt .e{font-size:44px;line-height:1}
+.opt:active{transform:translateY(2px);border-bottom-width:3px}
+.opt.good{background:var(--okbg);border-color:var(--ok);color:#0d6b4d}
+.opt.bad{background:var(--nobg);border-color:var(--no);color:#a3294f;animation:shake .35s;opacity:.7}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.next{margin-top:14px}
+
+/* learn */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fc{background:var(--card);border:2px solid var(--line);border-bottom-width:5px;border-radius:18px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:118px;position:relative}
+.fc .e{font-size:42px;line-height:1.1}
+.fc b{font-family:var(--display);font-size:18px;line-height:1.1}
+.fc i{font-style:normal;color:var(--soft);font-size:13.5px;font-weight:700;min-height:18px}
+.fc.seen{border-color:var(--mint);background:#f3fffb}
+.fc.seen::after{content:"✓";position:absolute;top:6px;right:10px;color:var(--mint);font-weight:800}
+
+/* memory */
+.mem{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mc{aspect-ratio:1/1;border-radius:16px;border:2px solid #d6cbf6;border-bottom-width:5px;background:linear-gradient(135deg,#8f73e6,#b79df5);color:#fff;font-size:30px;font-weight:800;display:grid;place-items:center;padding:4px;text-align:center;line-height:1.05;overflow-wrap:anywhere}
+.mc.up{background:var(--card);color:var(--ink);border-color:var(--line)}
+.mc.up.w{font-family:var(--display);font-size:16px}
+.mc.up.e{font-size:40px}
+.mc.match{background:var(--okbg);border-color:var(--ok)}
+
+/* builder */
+.line{min-height:66px;background:var(--card);border:2px dashed #d6cbf6;border-radius:18px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.line.good{border:2px solid var(--ok);background:var(--okbg)}
+.line.bad{animation:shake .35s}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+.chip{background:var(--card);border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;padding:8px 14px;font-weight:800;font-size:18px;min-height:46px}
+.line .chip{background:#f1edff;border-color:#d6cbf6}
+.ptline{text-align:center;color:var(--soft);font-weight:700;font-size:15px}
+
+/* speak */
+.mic{background:var(--berry);border-bottom-color:#b53a61}
+.mic.on{animation:pulse 1s infinite;background:#c4426c}
+@keyframes pulse{50%{box-shadow:0 0 0 12px rgba(226,85,127,.18)}}
+.heard{min-height:30px;text-align:center;font-weight:800;color:var(--grape);margin-top:10px;font-size:17px}
+.note{background:#fff8d9;border:2px solid var(--sun);border-radius:16px;padding:10px 12px;font-size:14.5px;font-weight:700;margin:0 0 10px}
+
+/* done */
+.done{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:22px 16px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.done .stars{font-size:52px;letter-spacing:6px;color:var(--sun)}
+.done .stars .off{color:var(--line)}
+.done h2{font-family:var(--display);font-size:28px;margin:0;line-height:1.1}
+.done p{margin:0;font-weight:700;color:var(--soft)}
+.conf{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9}
+.conf span{position:absolute;top:-40px;font-size:26px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:360px){.opt{font-size:17px}.qcard .q{font-size:21px}.lunaBtn{flex-basis:80px;width:80px}.luna{width:80px;height:74px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bar">
+    <button class="iconbtn" id="back" aria-label="Voltar ao mapa" hidden>←</button>
+    <h1 id="title">Luna English Adventure<small>Inglês brincando</small></h1>
+    <div class="pill" aria-label="Estrelas">⭐ <span id="total">0</span></div>
+    <button class="iconbtn" id="mute" aria-label="Ligar ou desligar a voz">🔊</button>
+  </div>
+  <div class="stage" id="stage">
+    <button class="lunaBtn" id="lunaBtn" aria-label="Luna, toque para ouvir de novo">
+      <svg class="luna" viewBox="0 0 120 110" aria-hidden="true">
+        <path d="M22 46 L16 8 L50 26 Z" fill="var(--fur)" stroke="#e9d9a8" stroke-width="2"/>
+        <path d="M98 46 L104 8 L70 26 Z" fill="var(--fur)" stroke="#e9d9a8" stroke-width="2"/>
+        <path d="M26 34 L23 17 L40 26 Z" fill="var(--pink)"/><path d="M94 34 L97 17 L80 26 Z" fill="var(--pink)"/>
+        <ellipse cx="60" cy="64" rx="47" ry="42" fill="var(--fur)" stroke="#e9d9a8" stroke-width="2"/>
+        <g class="eyes-open"><ellipse cx="43" cy="56" rx="6" ry="8" fill="#2e2a55"/><ellipse cx="77" cy="56" rx="6" ry="8" fill="#2e2a55"/><circle cx="45" cy="53" r="2.3" fill="#fff"/><circle cx="79" cy="53" r="2.3" fill="#fff"/></g>
+        <g class="eyes-laugh" fill="none" stroke="#2e2a55" stroke-width="3.6" stroke-linecap="round"><path d="M36 59 Q43 48 50 59"/><path d="M70 59 Q77 48 84 59"/></g>
+        <ellipse cx="29" cy="72" rx="8" ry="5" fill="var(--pink)" opacity=".75"/><ellipse cx="91" cy="72" rx="8" ry="5" fill="var(--pink)" opacity=".75"/>
+        <path d="M55.5 66 L64.5 66 L60 71.5 Z" fill="#e2557f"/>
+        <path class="mouth-smile" d="M50 76 Q60 86 70 76" fill="none" stroke="#2e2a55" stroke-width="3" stroke-linecap="round"/>
+        <ellipse class="mouth-talk" cx="60" cy="80" rx="6.5" ry="5.5" fill="#7a2f4a"/>
+        <path class="mouth-laugh" d="M47 75 Q60 99 73 75 Z" fill="#7a2f4a"/>
+        <g stroke="#cdbb86" stroke-width="1.6" stroke-linecap="round"><path d="M14 64 L2 61"/><path d="M14 70 L2 72"/><path d="M106 64 L118 61"/><path d="M106 70 L118 72"/></g>
+        <path d="M60 22 q6 -9 13 -3 q-9 1 -7 9 q-6 -1 -6 -6z" fill="var(--sun)"/>
+      </svg>
+    </button>
+    <div class="bubble" id="bubble" aria-live="polite"></div>
+  </div>
+  <main id="view"></main>
+</div>
+<div class="conf" id="conf"></div>
+
+<script>
+"use strict";
+/* ================= CONTENT (from the book pages: units 7 and 8) ================= */
+const HEALTH=[
+ {e:"👂",en:"earache",pt:"dor de ouvido",joke:"Ear é orelha e ache é dor. Earache é a orelha reclamando de tanto ouvir: arruma o quarto!"},
+ {e:"🤕",en:"headache",pt:"dor de cabeça",joke:"Head é cabeça. Headache é o que a cabeça sente quando aparece a tabuada do sete!"},
+ {e:"🤧",en:"cold",pt:"resfriado",joke:"Cold é frio e também é resfriado. O nariz vira torneirinha. Atchim!"},
+ {e:"🦷",en:"toothache",pt:"dor de dente",joke:"Tooth é dente. Toothache é o dente gritando: chega de bala!"},
+ {e:"🤢",en:"stomachache",pt:"dor de barriga",joke:"Stomach é estômago. Stomachache é a barriga dizendo: quem mandou comer a pizza inteira?"},
+ {e:"😷",en:"cough",pt:"tosse",joke:"Cough se fala cóf. Parece o barulhinho da tosse: cof, cof, cof!"},
+ {e:"🩺",en:"doctor",pt:"médico ou médica",joke:"Doctor é quase igual a doutor. As letras só trocaram de cadeira!"},
+ {e:"💉",en:"nurse",pt:"enfermeira ou enfermeiro",joke:"Nurse é quem cuida da gente no hospital, com muito carinho e, às vezes, uma injeçãozinha. Ui!"}
+];
+const COUNTRIES=[
+ {e:"🇪🇬",en:"Egypt",pt:"Egito",joke:"Por que a múmia não tira férias? Porque tem medo de relaxar e se desenrolar! Ela mora no Egypt, o Egito."},
+ {e:"🇦🇷",en:"Argentina",pt:"Argentina",joke:"Argentina escreve igualzinho em português. Essa foi presente dos nossos vizinhos!"},
+ {e:"🇮🇳",en:"India",pt:"Índia",joke:"India é a Índia, terra do Taj Mahal, um palácio tão branquinho que parece feito de leite!"},
+ {e:"🇦🇺",en:"Australia",pt:"Austrália",joke:"Australia é a terra dos cangurus. Lá até a mochila da mamãe canguru vem de fábrica!"},
+ {e:"🇲🇽",en:"Mexico",pt:"México",joke:"Mexico é a terra dos tacos. Ai, só de falar já deu fome!"},
+ {e:"🇧🇷",en:"Brazil",pt:"Brasil",joke:"Em inglês, Brazil é com Z. O S ficou na praia tomando água de coco!"},
+ {e:"🇨🇱",en:"Chile",pt:"Chile",joke:"Chile em inglês soa como chili, a pimenta. Um país bem comprido e apimentado!"},
+ {e:"🇪🇸",en:"Spain",pt:"Espanha",joke:"Spain é a Espanha. Os ingleses ficaram com fome e comeram o E do começo!"},
+ {e:"🇨🇳",en:"China",pt:"China",joke:"A muralha da China é tão comprida que não cabe na foto, nem com o braço esticado!"},
+ {e:"🇹🇷",en:"Turkey",pt:"Turquia",joke:"Turkey é a Turquia, mas também quer dizer peru! Um país com nome de ave. Glu, glu, glu!"}
+];
+const REG_J=["Verbo regular no passado é fácil: é só colar um e-d no final, igual figurinha!","O e-d é o pijama do verbo. Ele veste quando o dia já acabou!","Ontem já passou, então o verbo ganha um rabinho: e-d!","Quase! Com i-n-g a coisa está acontecendo agora. Para ontem, a gente usa e-d!"];
+const reg=(v,pt,s,ing,es,j)=>({q:s,sub:v+" = "+pt,say:v,opts:[v.endsWith("e")?v+"d":v+"ed",ing,es],a:v.endsWith("e")?v+"d":v+"ed",ok:s.replace("___",v.endsWith("e")?v+"d":v+"ed"),joke:j});
+const REGULAR=[
+ reg("play","jogar, brincar","Yesterday, I ___ soccer.","playing","plays"),
+ reg("shout","gritar","The boy ___ 'Help!'","shouting","shouts"),
+ reg("land","pousar, cair em","The bird ___ on the tree.","landing","lands"),
+ reg("jump","pular","The frog ___ into the water.","jumping","jumps"),
+ reg("look","olhar","She ___ at the stars.","looking","looks"),
+ reg("smile","sorrir","The baby ___ at me.","smiling","smiles","Smile já termina com a letra E, então só ganha um D. Economia de letra!"),
+ reg("climb","subir, escalar","We ___ a big tree.","climbing","climbs"),
+ reg("rest","descansar","Grandpa ___ on the sofa.","resting","rests"),
+ reg("watch","assistir","I ___ a movie last night.","watching","watches"),
+ reg("listen","escutar","We ___ to music.","listening","listens"),
+ reg("visit","visitar","They ___ their grandma.","visiting","visits"),
+ reg("call","ligar, chamar","Mom ___ the doctor.","calling","calls"),
+ reg("walk","andar","I ___ to school yesterday.","walking","walks")
+];
+const irr=(v,pt,s,past,wrong,es,j)=>({q:s,sub:v+" = "+pt,say:v,opts:[past,wrong,es],a:past,ok:s.replace("___",past),joke:j});
+const IRREGULAR=[
+ irr("go","ir","Yesterday, I ___ to the doctor.","went","goed","goes","Goed não existe! O go é rebelde: no passado ele se disfarça e vira went. Nem parece o mesmo verbo!"),
+ irr("have","ter","I ___ a headache last night.","had","haved","has","Have no passado encolhe e vira had. Haved é comprido demais, dá até preguiça!"),
+ irr("feel","sentir","She ___ sick yesterday.","felt","feeled","feels","Feel vira felt. Perdeu um E no caminho e achou um T!"),
+ irr("wake up","acordar","I ___ early this morning.","woke up","waked up","wakes up","Wake vira woke. Acordou tão cedo que até trocou de vogal!"),
+ irr("give","dar","The nurse ___ me some medicine.","gave","gived","gives","Give vira gave. Troca o I pelo A e pronto, presente entregue!"),
+ irr("say","dizer","'No school today,' she ___.","said","sayed","says","Say vira said, e rima com red. Falou, tá falado!"),
+ irr("see","ver","We ___ a lion at the zoo.","saw","seed","sees","Seed é semente! Eu vi um leão, não plantei um! O passado de see é saw."),
+ irr("eat","comer","He ___ a big apple cake.","ate","eated","eats","Eat vira ate, que soa igual a eight, o número oito. Comeu oito bolos? Não, só um!"),
+ irr("take","levar, pegar","Dad ___ me to the hospital.","took","taked","takes","Take vira took. Parece batida na porta: tuc, tuc!"),
+ irr("get","receber, pegar","Ben ___ a text message.","got","getted","gets","Get vira got. Curtinho e rápido, igual mensagem de celular!")
+];
+const H="Healthy 💚",U="Unhealthy 🚫";
+const hl=(e,en,pt,a,j)=>({em:e,q:en,sub:pt,say:en,opts:[H,U],a:a?H:U,ok:en+" is "+(a?"healthy":"unhealthy")+".",joke:j,g2:true});
+const HEALTHY=[
+ hl("🏊","swimming","nadar",1,"Nadar é saudável! Os peixinhos fazem todo dia e nunca reclamam!"),
+ hl("🎮","playing computer games for four hours","jogar no computador por quatro horas",0,"Quatro horas de jogo? Até o controle pediu férias!"),
+ hl("🌙","always going to bed very late","sempre dormir muito tarde",0,"Dormir tarde todo dia? Assim você vira coruja! Uh, uh!"),
+ hl("🍦","always eating ice cream for lunch","sempre almoçar sorvete",0,"Sorvete no almoço todo dia é gostoso, mas a barriga chora depois!"),
+ hl("🚶","walking to school","ir andando para a escola",1,"Andar faz bem! As pernas agradecem e ainda dá para ver os passarinhos!"),
+ hl("😂","laughing with friends","rir com os amigos",1,"Rir faz muito bem! Por isso eu rio tanto. Hi, hi, hi!"),
+ hl("🍎","eating fruit and vegetables","comer frutas e verduras",1,"Frutas e verduras são saudáveis! O brócolis é só uma arvorezinha simpática!"),
+ hl("🚴","riding a bike","andar de bicicleta",1,"Bicicleta é exercício! E o vento no rosto vem de brinde!"),
+ hl("🍟","eating chips every day","comer batata chips todo dia",0,"Chips todo dia? De vez em quando pode, mas todo dia a barriga vira um saquinho!"),
+ hl("😴","getting good sleep every night","dormir bem toda noite",1,"Dormir bem é saudável! É quando o corpo carrega a bateria, igual celular!"),
+ hl("💧","drinking lots of water","beber bastante água",1,"Água faz bem! Até as plantinhas sabem disso!"),
+ hl("🍭","eating candy all day","comer doce o dia inteiro",0,"Doce o dia inteiro? Os dentes vão pedir demissão!")
+];
+const DOCTOR=[
+ {em:"🩺",q:"What's the matter?",sub:"Qual é o problema?",say:"What's the matter?",opts:["I have a headache.","I'm ten years old.","It's Monday."],a:"I have a headache.",ok:"What's the matter? I have a headache.",joke:"A doutora perguntou o que você tem, não a sua idade nem o dia da semana! Hi, hi!"},
+ {em:"🤔",q:"What happened?",sub:"O que aconteceu?",say:"What happened?",opts:["I jumped and landed on my foot.","I like pizza.","Yes, I do."],a:"I jumped and landed on my foot.",ok:"I jumped and landed on my foot.",joke:"What happened quer saber o que aconteceu. Gostar de pizza não machuca ninguém!"},
+ {em:"🛏️",q:"You have to ___ in bed.",sub:"Você tem que ficar na cama.",say:"What do you have to do?",opts:["stay","jump","dance"],a:"stay",ok:"You have to stay in bed.",joke:"Pular na cama doente? A doutora ia desmaiar! É stay in bed, ficar na cama."},
+ {em:"💧",q:"You have to drink lots of ___.",sub:"Você tem que beber muita...",say:"What do you have to drink?",opts:["water","soda","chocolate"],a:"water",ok:"You have to drink lots of water.",joke:"Bem que a gente queria que fosse chocolate! Mas o remédio é water, água."},
+ {em:"💊",q:"You have to take some ___.",sub:"Você tem que tomar um pouco de...",say:"What do you have to take?",opts:["medicine","homework","pizza"],a:"medicine",ok:"You have to take some medicine.",joke:"Tomar lição de casa? Eca! É medicine, o remédio."},
+ {em:"👋",q:"Good morning, Doctor.",sub:"Bom dia, doutora.",say:"Good morning, Doctor.",opts:["Good morning. What's the matter?","Good night. Bye-bye!","I'm a nurse."],a:"Good morning. What's the matter?",ok:"Good morning. What's the matter?",joke:"Se a doutora desse boa noite e tchau, a consulta acabava antes de começar!"},
+ {em:"🦶",q:"I have a pain in my ___.",sub:"Estou com dor no pé.",say:"Where is the pain?",opts:["foot","book","door"],a:"foot",ok:"I have a pain in my foot.",joke:"Dor no livro? Dor na porta? Só se você estudou demais! É foot, o pé."}
+];
+const DIDNT_J="Depois de didn't, o verbo volta ao normal. O didn't é fortão e carrega o passado sozinho!";
+const DIDNT=[
+ {q:"We went to the beach, but we ___ swim.",sub:"Fomos à praia, mas não nadamos.",say:"We went to the beach.",opts:["didn't","don't","aren't"],a:"didn't",joke:"Para dizer que não fez no passado, chame o didn't! Ele é o não que viajou no tempo."},
+ {q:"I didn't ___ the lions.",sub:"Eu não vi os leões.",say:"The lions!",opts:["see","saw","seed"],a:"see",joke:DIDNT_J},
+ {q:"She didn't ___ pizza.",sub:"Ela não comeu pizza.",say:"Pizza!",opts:["eat","ate","eating"],a:"eat",joke:DIDNT_J},
+ {q:"They didn't ___ to China.",sub:"Eles não foram para a China.",say:"China!",opts:["go","went","goes"],a:"go",joke:"Didn't went é passado em dobro! O verbo fica tonto. Só o didn't já resolve: didn't go."},
+ {q:"I went to the party, but I didn't ___ fun.",sub:"Fui à festa, mas não me diverti.",say:"I went to the party.",opts:["have","had","has"],a:"have",joke:DIDNT_J},
+ {q:"The beach was cold, so he ___ stay.",sub:"A praia estava fria, então ele não ficou.",say:"The beach was cold.",opts:["didn't","not","no"],a:"didn't",joke:"Só not ou só no ficam sozinhos e tristes. Eles precisam do amigo did: didn't!"},
+ {q:"We didn't ___ the Amazon.",sub:"Nós não visitamos a Amazônia.",say:"The Amazon!",opts:["visit","visited","visiting"],a:"visit",joke:DIDNT_J},
+ {q:"I ___ eat ice cream yesterday.",sub:"Eu não tomei sorvete ontem.",say:"Ice cream!",opts:["didn't","doesn't","isn't"],a:"didn't",joke:"Yesterday é ontem, e ontem pede didn't. Coitado do sorvete, ficou esperando!"}
+].map(x=>({...x,ok:x.q.replace("___",x.a)}));
+const DIDQ=[
+ {q:"Did you have fun?",sub:"Você se divertiu?",opts:["Yes, I did.","Yes, I do.","Yes, I am."],a:"Yes, I did.",joke:"Perguntou com did, responde com did! É igual eco: did, did!"},
+ {q:"Did you go by plane?",sub:"Você foi de avião?",opts:["No, I didn't.","No, I don't.","No, I'm not."],a:"No, I didn't.",joke:"Perguntou com did, o não também vem com did: didn't! Sem avião, mas com resposta certa."},
+ {q:"Who did you go with?",sub:"Com quem você foi?",opts:["My mom and dad.","For a week.","In a hotel."],a:"My mom and dad.",joke:"Who quer saber quem. Hotel não é gente, e semana também não! Hi, hi!"},
+ {q:"How long did you stay there?",sub:"Quanto tempo você ficou lá?",opts:["For a week.","By bus.","My sister."],a:"For a week.",joke:"How long quer saber quanto tempo. Ficar uma irmã de tempo não dá!"},
+ {q:"Where did you stay?",sub:"Onde você ficou?",opts:["In a hotel.","Yesterday.","Yes, I did."],a:"In a hotel.",joke:"Where quer saber onde. Ontem não é um lugar, a não ser na máquina do tempo!"},
+ {q:"When did you get home?",sub:"Quando você chegou em casa?",opts:["Yesterday.","In a hotel.","With my dad."],a:"Yesterday.",joke:"When quer saber quando. Hotel é onde, papai é quem. Quando é yesterday!"},
+ {q:"Did you send me a postcard?",sub:"Você me mandou um cartão-postal?",opts:["Sorry! I forgot.","For a week.","In Brazil."],a:"Sorry! I forgot.",joke:"Esqueceu o cartão-postal? Acontece! Sorry, I forgot quer dizer: desculpa, esqueci!"}
+].map(x=>({...x,em:"💬",say:x.q,ok:x.q+" "+x.a}));
+const w=(e,name,pt,opts,a,j)=>({em:e,q:"Where is "+name+"?",sub:pt,say:"Where is "+name+"?",opts,a,ok:name.charAt(0).toUpperCase()+name.slice(1)+" is in "+a+".",joke:j});
+const WONDERS=[
+ w("🏯","the Great Wall","Onde fica a Grande Muralha?",["China","India","Egypt"],"China","A muralha fica na China. É tão comprida que quem começa a andar criança chega no fim de bengala. Brincadeirinha!"),
+ w("🕌","the Taj Mahal","Onde fica o Taj Mahal?",["India","Spain","Mexico"],"India","O Taj Mahal fica na India. Um imperador construiu para lembrar da esposa. Que presentão!"),
+ w("🦁","the Sphinx","Onde fica a Esfinge?",["Egypt","Australia","Chile"],"Egypt","A Esfinge tem corpo de leão e cabeça de homem. Imagina o tamanho do travesseiro! Ela fica no Egypt."),
+ w("🌳","the Amazon","Onde fica a Amazônia?",["Brazil","Turkey","China"],"Brazil","A Amazônia fica aqui pertinho, no nosso Brazil! Essa era de casa!"),
+ w("🎭","the Sydney Opera House","Onde fica a Ópera de Sydney?",["Australia","Argentina","India"],"Australia","A Opera House fica na Australia. O telhado parece um monte de conchas gigantes!"),
+ w("🗼","the Eiffel Tower","Onde fica a Torre Eiffel?",["France","Spain","Turkey"],"France","A Torre Eiffel fica em Paris, na France. Ela é tão alta que dá torcicolo só de olhar!"),
+ w("🏜️","the Grand Canyon","Em qual continente fica o Grand Canyon?",["North America","Africa","Asia"],"North America","O Grand Canyon fica na North America. É um buraco tão grande que o eco demora para voltar!"),
+ w("🏔️","Mount Everest","Em qual continente fica o Monte Everest?",["Asia","Europe","South America"],"Asia","O Everest fica na Asia. É a montanha mais alta do mundo. Lá em cima até a nuvem fica com frio!"),
+ w("💦","Victoria Falls","Em qual continente ficam as Cataratas Vitória?",["Africa","Asia","Europe"],"Africa","As Victoria Falls ficam na Africa. É tanta água que nem precisa de chuveiro!"),
+ w("🐠","the Great Barrier Reef","Onde fica a Grande Barreira de Corais?",["Australasia","Europe","Africa"],"Australasia","A barreira de corais fica na Australasia. Dá para ver até do espaço! Os peixinhos são famosos."),
+ w("⛱️","the Harbor of Rio de Janeiro","Em qual continente fica a baía do Rio de Janeiro?",["South America","North America","Asia"],"South America","O Rio fica na South America, a América do Sul. É a nossa casa!")
+];
+const BUILD7=[
+ {en:"Yesterday I played basketball.",pt:"Ontem eu joguei basquete."},
+ {en:"He jumped up high.",pt:"Ele pulou bem alto."},
+ {en:"I had a bad headache.",pt:"Eu estava com uma dor de cabeça forte."},
+ {en:"The doctor gave me some medicine.",pt:"A médica me deu um remédio."},
+ {en:"She went back to bed.",pt:"Ela voltou para a cama."},
+ {en:"We landed in the water.",pt:"Nós caímos na água."}
+];
+const BUILD8=[
+ {en:"Did you have a good vacation?",pt:"Você teve boas férias?"},
+ {en:"Who did you see there?",pt:"Quem você viu lá?"},
+ {en:"How did you get there?",pt:"Como você chegou lá?"},
+ {en:"When did you get back home?",pt:"Quando você voltou para casa?"},
+ {en:"We didn't go to the beach.",pt:"Nós não fomos à praia."},
+ {en:"I didn't see the Sphinx.",pt:"Eu não vi a Esfinge."}
+];
+const sp=(e,en,pt)=>({em:e,en,pt,say:en});
+const SPEAK7=[sp("🤕","headache","dor de cabeça"),sp("🦷","toothache","dor de dente"),sp("🤢","stomachache","dor de barriga"),sp("🩺","doctor","médico ou médica"),sp("💉","nurse","enfermeira ou enfermeiro"),sp("🤧","I have a cold.","Estou resfriada."),sp("🤕","I have a headache.","Estou com dor de cabeça."),sp("🩺","What's the matter?","Qual é o problema?"),sp("🏀","I played basketball.","Eu joguei basquete."),sp("🐸","He jumped up high.","Ele pulou bem alto."),sp("🏥","I went to the doctor.","Eu fui ao médico.")];
+const SPEAK8=[sp("🇧🇷","Brazil","Brasil"),sp("🇪🇬","Egypt","Egito"),sp("🇦🇺","Australia","Austrália"),sp("🇹🇷","Turkey","Turquia"),sp("🇪🇸","Spain","Espanha"),sp("🎉","Did you have fun?","Você se divertiu?"),sp("👍","Yes, I did.","Sim."),sp("👎","No, I didn't.","Não."),sp("🏨","Where did you stay?","Onde você ficou?"),sp("🦁","I didn't see the lions.","Eu não vi os leões."),sp("🏖️","We went to the beach.","Nós fomos à praia.")];
+const HEAR_J=[["Eu ouvi","Meus ouvidos de gata se enrolaram! Vamos de novo, bem devagar."],["Hi, hi! Chegou aqui","Parece nome de sobremesa! Escute e repita comigo."],["Eu ouvi","Será que foi o meu bigode que atrapalhou? Mais uma vez!"],["Hi, hi! Você disse","Essa palavra ainda não inventaram! Vamos tentar de novo juntas."]];
+const BUILD_J=["Essa frase virou uma salada de palavras! Vamos arrumar o prato?","As palavras trocaram de lugar na fila! Quem será a primeira?","Ficou parecendo o jeito que um robô com soluço fala! Tente de novo.","Quase! As palavras estão brincando de dança das cadeiras."];
+const MEM_J=["Minha memória também é de peixinho dourado! Vamos de novo.","Essas cartas são danadinhas, ficam trocando de lugar! Brincadeira.","Ops! Esse par não se conhece. Procure o amigo certo."];
+const PRAISE=["Great job!","Awesome!","Perfect!","You got it!","Well done!","Super!","Yes! That's right!","Fantastic!"];
+
+const WORLDS=[
+ {id:"w7",name:"In the Hospital",unit:"Unit 7",desc:"Saúde, médico e o que aconteceu ontem.",missions:[
+  {id:"7learn",ic:"🩹",t:"Palavras do hospital",s:"Listen and say",type:"learn",data:HEALTH},
+  {id:"7listen",ic:"👂",t:"Escute e toque",s:"Listen and tap",type:"listen",data:HEALTH},
+  {id:"7speak",ic:"🎤",t:"Fale com a Luna",s:"Say it!",type:"speak",data:SPEAK7},
+  {id:"7mem",ic:"🧠",t:"Jogo da memória",s:"Memory game",type:"memory",data:HEALTH},
+  {id:"7reg",ic:"⏰",t:"Máquina do ontem",s:"Past with -ed",type:"mc",data:REGULAR,jokes:REG_J,intro:["What happened yesterday?","Escolha o verbo no passado."]},
+  {id:"7irr",ic:"🎭",t:"Verbos rebeldes",s:"went, had, felt…",type:"mc",data:IRREGULAR,intro:["These verbs are funny!","Esses verbos mudam de roupa no passado."]},
+  {id:"7health",ic:"🥗",t:"Saudável ou não?",s:"Healthy or unhealthy",type:"mc",data:HEALTHY,intro:["Healthy or unhealthy?","Faz bem ou faz mal para a saúde?"]},
+  {id:"7doc",ic:"🩺",t:"No consultório",s:"At the doctor's",type:"mc",data:DOCTOR,intro:["Let's play doctor!","Escolha a melhor resposta."]},
+  {id:"7build",ic:"🧩",t:"Monte a frase",s:"Make sentences",type:"build",data:BUILD7}
+ ]},
+ {id:"w8",name:"Around the World",unit:"Unit 8",desc:"Países, viagens e maravilhas do mundo.",missions:[
+  {id:"8learn",ic:"🌍",t:"Países",s:"Listen and say",type:"learn",data:COUNTRIES},
+  {id:"8listen",ic:"🚩",t:"Jogo das bandeiras",s:"The flag game",type:"listen",data:COUNTRIES},
+  {id:"8speak",ic:"🎤",t:"Fale com a Luna",s:"Say it!",type:"speak",data:SPEAK8},
+  {id:"8mem",ic:"🧠",t:"Jogo da memória",s:"Memory game",type:"memory",data:COUNTRIES},
+  {id:"8didnt",ic:"🙅",t:"Eu não fiz!",s:"I didn't…",type:"mc",data:DIDNT,intro:["I didn't do it!","Complete a frase."]},
+  {id:"8didq",ic:"❓",t:"Perguntas da viagem",s:"Did you…?",type:"mc",data:DIDQ,intro:["Vacation questions!","Qual é a resposta certa?"]},
+  {id:"8build",ic:"🧩",t:"Monte a pergunta",s:"Put the words in order",type:"build",data:BUILD8},
+  {id:"8won",ic:"🗺️",t:"Maravilhas do mundo",s:"Wonders of the world",type:"mc",data:WONDERS,intro:["Let's travel the world!","Onde fica cada maravilha?"]}
+ ]}
+];
+
+/* ================= HELPERS ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const KEY="luna_english_v1";
+let save={name:"",stars:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&typeof s==="object")save=Object.assign(save,s)}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
+const totalStars=()=>Object.values(save.stars).reduce((a,b)=>a+b,0);
+const starStr=n=>"★".repeat(n)+'<span class="off">'+"★".repeat(3-n)+"</span>";
+
+/* ================= SOUND (soft synth: giggle, ding, win) ================= */
+let ac=null;
+function audio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume()}catch(e){}return ac}
+function tone(f,t,d,g=.12,type="sine",f2){const a=audio();if(!a||muted)return;try{const o=a.createOscillator(),v=a.createGain();o.type=type;o.frequency.setValueAtTime(f,a.currentTime+t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,a.currentTime+t+d);v.gain.setValueAtTime(0,a.currentTime+t);v.gain.linearRampToValueAtTime(g,a.currentTime+t+.02);v.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+d);o.connect(v).connect(a.destination);o.start(a.currentTime+t);o.stop(a.currentTime+t+d+.05)}catch(e){}}
+const giggle=()=>[980,1100,940,1060,900,1020,820].forEach((f,i)=>tone(f,i*.105,.09,.1,"triangle",f*.86));
+const ding=()=>{tone(784,0,.14,.12);tone(1175,.12,.28,.12)};
+const pop=()=>tone(520,0,.07,.08,"triangle",700);
+const fanfare=()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,i*.13,.3,.11,"triangle"));
+
+/* ================= VOICE: Claude voice when the page has it, else the phone's own voice ================= */
+let muted=false,ctts=null,tok=0,voices=[],dict=null,dictH=null,srDead=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const micMode=()=>dict?"dict":(SR&&!srDead?"web":null);
+(function findTTS(n){if(window.claude&&typeof window.claude.use==="function"){window.claude.use("tts").then(t=>{ctts=t||null}).catch(()=>{});
+  window.claude.use("dictation").then(d=>{dict=d||null;if(!dict)return;try{dict.onFinal(e=>dictH&&dictH("final",e.text));dict.onPartial(e=>dictH&&dictH("partial",e.text));dict.onState(e=>dictH&&dictH("state",e.state,e.reason))}catch(e){}}).catch(()=>{})}else if(n<24)setTimeout(()=>findTTS(n+1),500)})(0);
+const hasWeb="speechSynthesis" in window;
+function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){}}
+if(hasWeb){loadVoices();try{speechSynthesis.onvoiceschanged=loadVoices}catch(e){}}
+const SOFT_EN=["Samantha","Google US English","Aria","Jenny","Ava","Allison","Karen","Moira","Tessa","Zira","Female"];
+const SOFT_PT=["Luciana","Francisca","Google português do Brasil","Fernanda","Maria"];
+function voiceFor(l){const pre=l==="pt"?"pt":"en";const list=voices.filter(v=>(v.lang||"").toLowerCase().replace("_","-").startsWith(pre));if(!list.length)return null;const names=l==="pt"?SOFT_PT:SOFT_EN;for(const n of names){const v=list.find(x=>x.name.includes(n));if(v)return v}return list.find(v=>/br|us/i.test(v.lang))||list[0]}
+function webSay(parts,my){if(!hasWeb)return Promise.resolve();try{speechSynthesis.cancel()}catch(e){}
+  return parts.reduce((p,x)=>p.then(()=>my!==tok?null:new Promise(res=>{let done=false;const fin=()=>{if(!done){done=true;res()}};try{const u=new SpeechSynthesisUtterance(x.t);const v=voiceFor(x.l);if(v)u.voice=v;u.lang=x.l==="pt"?"pt-BR":"en-US";u.rate=x.slow?.6:.86;u.pitch=1.18;u.volume=1;u.onend=fin;u.onerror=fin;setTimeout(fin,1800+x.t.length*(x.slow?170:110));speechSynthesis.speak(u)}catch(e){fin()}})),Promise.resolve())}
+function say(parts){ // parts: [{t:"text", l:"en"|"pt", slow:bool}]
+  const my=++tok;parts=parts.filter(x=>x&&x.t);
+  if(muted||!parts.length){stopVoice(true);return Promise.resolve()}
+  const stage=$("#stage");stage.classList.add("talking");
+  const end=()=>{if(my===tok)stage.classList.remove("talking")};
+  let p;
+  if(ctts){try{if(hasWeb)speechSynthesis.cancel()}catch(e){}
+    p=ctts.speak(parts.map(x=>({text:x.t,voice:"airy",rate:x.slow?.72:.92,language:x.l==="pt"?"pt-BR":"en"}))).catch(err=>{if(err&&err.code==="not_granted"){ctts=null;if(my===tok)return webSay(parts,my)}})}
+  else p=webSay(parts,my);
+  return p.then(end,end)}
+function stopVoice(keepTok){if(!keepTok)tok++;try{if(ctts)ctts.stop()}catch(e){}try{if(hasWeb)speechSynthesis.cancel()}catch(e){}$("#stage").classList.remove("talking")}
+
+/* ================= LUNA (bubble + mood) ================= */
+let lastSaid=[];
+function luna(en,pt,parts,mood){
+  const b=$("#bubble"),st=$("#stage");
+  b.className="bubble"+(mood==="laugh"?" jokey":"");
+  b.innerHTML=(en?'<span class="en">'+esc(en)+"</span>":"")+(pt?'<span class="pt">'+esc(pt)+"</span>":"");
+  st.classList.remove("laugh","happy");void st.offsetWidth;
+  if(mood)st.classList.add(mood);
+  if(mood==="laugh")setTimeout(()=>st.classList.remove("laugh"),2600);
+  lastSaid=parts||[];
+  return parts?say(parts):Promise.resolve()}
+const E=t=>({t,l:"en"}),P=t=>({t,l:"pt"}),S=t=>({t,l:"en",slow:true});
+const nm=()=>save.name?", "+save.name:"";
+
+/* ================= SCREENS ================= */
+let run=null;
+function setBar(title,sub,back){$("#title").innerHTML=esc(title)+(sub?"<small>"+esc(sub)+"</small>":"");$("#back").hidden=!back;$("#total").textContent=totalStars()}
+
+function welcome(){run=null;setBar("Luna English Adventure","Inglês brincando",false);
+  luna("Hello! I'm Luna!","Oi! Eu sou a Luna. Vamos brincar e aprender inglês juntas?",null);
+  $("#view").innerHTML='<form class="welcome" id="wform"><label for="name">Como você se chama?</label><input id="name" maxlength="20" autocomplete="off" placeholder="Seu nome" value="'+esc(save.name)+'"><button class="big" type="submit">Let\'s play! ▶</button><p class="ptline" style="margin:0">Aumente o volume do celular para ouvir a Luna.</p></form>';
+  $("#wform").addEventListener("submit",e=>{e.preventDefault();save.name=$("#name").value.trim().slice(0,20);save.seen=true;persist();audio();home(true)})}
+
+function home(greet){run=null;stopVoice();setBar("Luna English Adventure","Inglês brincando",false);
+  const first=!totalStars();
+  const en="Hello"+nm()+"!",pt=first?"Escolha uma missão para começar. Toque em mim sempre que quiser ouvir de novo!":"Que bom te ver! Qual missão vamos jogar agora?";
+  luna(en,pt,greet?[E("Hello"+nm()+"! I'm Luna. Let's play!"),P(first?"Escolha uma missão para começar.":"Qual missão vamos jogar agora?")]:null,greet?"happy":null);
+  if(!greet)lastSaid=[E("Hello"+nm()+"! Let's play!"),P("Escolha uma missão.")];
+  $("#view").innerHTML=WORLDS.map(wd=>'<section class="world '+wd.id+'"><h2>'+esc(wd.name)+" <span>"+wd.unit+"</span></h2><p>"+esc(wd.desc)+'</p><div class="tiles">'+wd.missions.map(m=>{const s=save.stars[m.id]||0;return '<button class="tile'+(s?" done":"")+'" data-m="'+m.id+'"><span class="ic">'+m.ic+"</span><b>"+esc(m.t)+"</b><i>"+esc(m.s)+'</i><span class="st" aria-label="'+s+' de 3 estrelas">'+starStr(s)+"</span></button>"}).join("")+"</div></section>").join("")+
+   '<p class="foot">Para os pais: a Luna fala em inglês com voz calma e explica em português. Se a voz não sair, confira o volume e o botão 🔊 lá em cima. Nas missões com 🎤 a criança fala e a Luna escuta; o aparelho vai pedir permissão para usar o microfone. As estrelas ficam guardadas neste aparelho.</p>';
+  window.scrollTo(0,0)}
+
+function findMission(id){for(const wd of WORLDS)for(const m of wd.missions)if(m.id===id)return m}
+function start(id){const m=findMission(id);if(!m)return;audio();stopVoice();setBar(m.t,m.s,true);window.scrollTo(0,0);
+  ({learn:startLearn,listen:startListen,memory:startMemory,mc:startMC,build:startBuild,speak:startSpeak})[m.type](m)}
+
+function finish(m,stars,line){stopVoice();const old=save.stars[m.id]||0;if(stars>old){save.stars[m.id]=stars;persist()}
+  $("#total").textContent=totalStars();run=null;fanfare();confetti();
+  const en=stars===3?"You did it"+nm()+"! Three stars!":stars===2?"Good job"+nm()+"! Two stars!":"Nice try"+nm()+"! One star!";
+  const pt=stars===3?"Perfeito! Você é uma estrela!":stars===2?"Muito bem! Jogue de novo para ganhar a terceira estrela.":"Você conseguiu chegar ao fim! Jogue de novo para ganhar mais estrelas.";
+  luna(en,pt,[E(en),P(pt)],"happy");
+  $("#view").innerHTML='<div class="done"><div class="stars">'+starStr(stars)+"</div><h2>"+esc(m.t)+"</h2><p>"+esc(line||"Missão completa!")+'</p><button class="big mint" data-m="'+m.id+'">Jogar de novo 🔁</button><button class="big ghost" data-home="1">Voltar ao mapa 🗺️</button></div>'}
+
+function confetti(){const c=$("#conf");c.innerHTML="";const em=["⭐","🌟","💜","🎉","✨","🌙"];for(let i=0;i<22;i++){const s=document.createElement("span");s.textContent=pick(em);s.style.left=Math.random()*100+"%";s.style.animationDuration=(2+Math.random()*2)+"s";s.style.animationDelay=Math.random()*.8+"s";c.appendChild(s)}setTimeout(()=>{c.innerHTML=""},5000)}
+
+/* ---------- learn ---------- */
+function startLearn(m){run={m,type:"learn",seen:new Set()};
+  luna("Listen and say!","Toque em cada carta, escute e repita em voz alta.",[E("Listen and say!"),P("Toque em cada carta, escute e repita em voz alta.")]);
+  $("#view").innerHTML='<div class="cards">'+m.data.map((v,i)=>'<button class="fc" data-fc="'+i+'"><span class="e">'+v.e+"</span><b>"+esc(v.en)+"</b><i></i></button>").join("")+'</div><div class="next"><button class="big mint" id="learnDone" disabled>Toque em todas as cartas</button></div>'}
+function tapLearn(i,el){const v=run.m.data[i];pop();run.seen.add(i);el.classList.add("seen");el.querySelector("i").textContent=v.pt;
+  luna(v.en,v.pt+". Agora repita: "+v.en+"!",[E(v.en),S(v.en),P(v.pt)]);
+  if(run.seen.size===run.m.data.length){const b=$("#learnDone");b.disabled=false;b.textContent="Concluir ⭐⭐⭐"}}
+
+/* ---------- multiple choice (also used by listen & tap) ---------- */
+function startListen(m){const items=shuffle(m.data).slice(0,8).map(v=>{const others=shuffle(m.data.filter(x=>x!==v)).slice(0,3);return {listen:true,say:v.en,opts:shuffle([v,...others]).map(x=>({k:x.en,e:x.e})),a:v.en,joke:v.joke,ok:v.en,reveal:v.en+" = "+v.pt,g2:true,em:"🎧",q:"Which one is it?",sub:"Escute e toque na figura certa."}});
+  beginMC(m,items,["Listen and tap!","Escute e toque na figura certa."])}
+function startMC(m){const items=shuffle(m.data).slice(0,8).map(it=>({...it,opts:shuffle(it.opts).map(o=>({k:o,t:o})),joke:it.joke||pick(m.jokes||["Quase! Tente de novo."])}));
+  beginMC(m,items,m.intro||["Let's play!","Escolha a resposta certa."])}
+function beginMC(m,items,intro){run={m,type:"mc",items,i:0,first:0,missed:false,intro};showMC(true)}
+function qHTML(it){return esc(it.q).replace("___",'<span class="blank">&nbsp;</span>')}
+function showMC(isFirst){const it=run.items[run.i];run.missed=false;run.done=false;
+  const parts=(isFirst?[E(run.intro[0]),P(run.intro[1])]:[]).concat([E(it.say)]);
+  luna(isFirst?run.intro[0]:(it.listen?"Listen!":"Your turn!"),isFirst?run.intro[1]:(it.listen?"Qual figura eu falei?":it.sub),parts);
+  lastSaid=[E(it.say)];
+  $("#view").innerHTML='<div class="prog"><i style="width:'+(run.i/run.items.length*100)+'%"></i></div><div class="qcard">'+(it.em?'<div class="em">'+it.em+"</div>":"")+'<div class="q" id="q">'+qHTML(it)+'</div><div class="sub" id="sub">'+esc(it.listen?"Escute e toque na figura certa.":it.sub||"")+'</div><div class="hear"><button data-hear="1">🔊 Ouvir</button><button data-hear="slow">🐢 Devagar</button></div></div><div class="opts'+(it.g2?" g2":"")+'">'+it.opts.map((o,i)=>'<button class="opt" data-o="'+i+'">'+(o.e?'<span class="e">'+o.e+"</span>":esc(o.t))+"</button>").join("")+'</div><div class="next" id="next"></div>'}
+async function tapMC(i,el){if(!run||run.done||el.classList.contains("bad"))return;const it=run.items[run.i],o=it.opts[i];
+  if(o.k===it.a){run.done=true;if(!run.missed)run.first++;el.classList.add("good");ding();
+    const bl=document.querySelector(".blank");if(bl){bl.textContent=it.a;bl.classList.add("fill")}
+    if(it.listen){$("#q").textContent=it.reveal;$("#sub").textContent="Repita em voz alta!"}
+    const pr=pick(PRAISE);luna(pr,it.listen?it.reveal:it.ok,[E(pr),E(it.ok)],"happy");
+    const last=run.i===run.items.length-1;$("#next").innerHTML='<button class="big mint" id="nextBtn">'+(last?"Ver minhas estrelas ⭐":"Next ➜")+"</button>";
+    document.querySelector(".prog i").style.width=((run.i+1)/run.items.length*100)+"%"}
+  else{run.missed=true;el.classList.add("bad");giggle();const my=run.i;
+    luna("Hee hee! Oops!",it.joke.replace(/e-d/g,"-ed").replace(/i-n-g/g,"-ing"),null,"laugh");lastSaid=[P(it.joke),E(it.say)];
+    await wait(850);if(run&&run.type==="mc"&&run.i===my&&!run.done)say([P(it.joke),P("Tente de novo!")])}}
+function nextMC(){run.i++;if(run.i>=run.items.length){const pct=run.first/run.items.length;finish(run.m,pct>=.9?3:pct>=.6?2:1,run.first+" de "+run.items.length+" certas de primeira.")}else showMC(false)}
+
+/* ---------- memory ---------- */
+function startMemory(m){const set=shuffle(m.data).slice(0,6);const cards=shuffle(set.flatMap((v,i)=>[{id:i,k:"e",v},{id:i,k:"w",v}]));
+  run={m,type:"memory",cards,open:[],found:0,moves:0,miss:0,lock:false};
+  luna("Find the pairs!","Ache o par: a figura e a palavra em inglês.",[E("Find the pairs!"),P("Ache o par: a figura e a palavra em inglês.")]);
+  $("#view").innerHTML='<div class="mem">'+cards.map((c,i)=>'<button class="mc" data-mc="'+i+'" aria-label="Carta">🌙</button>').join("")+"</div>"}
+function tapMem(i,el){if(!run||run.lock||el.classList.contains("up"))return;const c=run.cards[i];pop();
+  el.classList.add("up",c.k);el.textContent=c.k==="e"?c.v.e:c.v.en;run.open.push({i,el,c});
+  if(run.open.length===1){say([E(c.v.en)]);return}
+  run.moves++;const [a,b]=run.open;run.open=[];
+  if(a.c.id===b.c.id){a.el.classList.add("match");b.el.classList.add("match");run.found++;ding();
+    luna(pick(PRAISE),c.v.en+" = "+c.v.pt,[E(c.v.en)],"happy");
+    if(run.found===6){const mv=run.moves;setTimeout(()=>{if(run&&run.type==="memory")finish(run.m,mv<=9?3:mv<=13?2:1,"Você achou os 6 pares em "+mv+" jogadas.")},1300)}}
+  else{run.lock=true;run.miss++;say([E(c.v.en)]);
+    if(run.miss%3===0){giggle();const j=pick(MEM_J);luna("Hee hee!",j,null,"laugh");setTimeout(()=>{if(run&&run.type==="memory")say([P(j)])},850)}
+    setTimeout(()=>{[a,b].forEach(x=>{x.el.classList.remove("up","e","w");x.el.textContent="🌙"});if(run)run.lock=false},1000)}}
+
+/* ---------- sentence builder ---------- */
+function startBuild(m){run={m,type:"build",items:shuffle(m.data).slice(0,5),i:0,first:0};showBuild(true)}
+function showBuild(isFirst){const it=run.items[run.i];run.missed=false;run.done=false;run.ans=[];
+  const words=it.en.split(" ");let pool=shuffle(words.map((t,i)=>({t,i})));if(pool.every((x,i)=>x.i===i))pool.reverse();run.pool=pool;
+  luna(isFirst?"Make the sentence!":"Next one!","Toque nas palavras na ordem certa.",isFirst?[E("Make the sentence!"),P("Toque nas palavras na ordem certa.")]:[E("Next one!")]);
+  lastSaid=[P(it.pt)];
+  $("#view").innerHTML='<div class="prog"><i style="width:'+(run.i/run.items.length*100)+'%"></i></div><div class="qcard"><div class="sub">Em português</div><div class="q" style="font-size:20px">'+esc(it.pt)+'</div><div class="hear"><button data-hint="1">🔊 Ouvir em inglês</button></div></div><div class="line" id="line"></div><div class="pool" id="pool"></div><div class="next" id="next"><button class="big" id="check" disabled>Check ✔</button></div>';drawBuild()}
+function drawBuild(){$("#line").innerHTML=run.ans.map((x,n)=>'<button class="chip" data-un="'+n+'">'+esc(x.t)+"</button>").join("")||'<span class="ptline">Sua frase aparece aqui</span>';
+  $("#pool").innerHTML=run.pool.map((x,n)=>'<button class="chip" data-pk="'+n+'">'+esc(x.t)+"</button>").join("");const c=$("#check");if(c)c.disabled=run.pool.length>0}
+async function checkBuild(){const it=run.items[run.i];const got=run.ans.map(x=>x.t).join(" ");
+  if(got===it.en){run.done=true;if(!run.missed)run.first++;ding();$("#line").classList.add("good");const pr=pick(PRAISE);luna(pr,it.en,[E(pr),E(it.en)],"happy");
+    const last=run.i===run.items.length-1;$("#next").innerHTML='<button class="big mint" id="nextB">'+(last?"Ver minhas estrelas ⭐":"Next ➜")+"</button>";
+    document.querySelector(".prog i").style.width=((run.i+1)/run.items.length*100)+"%";document.querySelectorAll("#line .chip").forEach(b=>b.disabled=true)}
+  else{run.missed=true;giggle();const j=pick(BUILD_J),first=it.en.split(" ")[0],my=run.i;const l=$("#line");l.classList.remove("bad");void l.offsetWidth;l.classList.add("bad");
+    const tip=j+" Dica: a primeira palavra é "+first+".";luna("Hee hee! Oops!",tip,null,"laugh");lastSaid=[P(j),E(first)];
+    await wait(850);if(run&&run.type==="build"&&run.i===my&&!run.done)say([P(j+" Dica: a primeira palavra é"),E(first)])}}
+function nextBuild(){run.i++;if(run.i>=run.items.length){const pct=run.first/run.items.length;finish(run.m,pct>=.8?3:pct>=.5?2:1,run.first+" de "+run.items.length+" frases certas de primeira.")}else showBuild(false)}
+
+/* ---------- speak: the child talks, Luna listens ---------- */
+function listen(onPart){return new Promise(res=>{stopVoice();let finals="",part="",done=false,timer=null,was=false;
+  const fin=v=>{if(done)return;done=true;clearTimeout(timer);dictH=null;res(v)};
+  if(dict){const d=dict;const stop=()=>{Promise.resolve().then(()=>d.stop()).catch(()=>{}).then(()=>setTimeout(()=>fin({alts:[(finals||part).trim()]}),120))};
+    dictH=(k,v,why)=>{if(k==="final"){finals+=v;onPart(finals.trim());clearTimeout(timer);timer=setTimeout(stop,1100)}else if(k==="partial"){if(v){part=v;onPart((finals+" "+v).trim())}}else if(k==="state"){if(v==="listening")was=true;else if(v==="idle"&&was)setTimeout(()=>fin({alts:[(finals||part).trim()]}),150)}};
+    timer=setTimeout(stop,7000);
+    d.start({language:"en"}).catch(e=>{const c=e&&e.code;if(c==="not_granted"||c==="unavailable")dict=null;if(c!=="stopped")fin({err:c||"error"})})}
+  else{let alts=[];try{const r=new SR();r.lang="en-US";r.interimResults=true;r.maxAlternatives=5;
+      r.onresult=e=>{const rs=e.results[e.results.length-1];alts=Array.from(rs).map(a=>a.transcript);if(alts[0])onPart(alts[0])};
+      r.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){srDead=true;fin({err:"blocked"})}};
+      r.onend=()=>fin({alts});r.start();timer=setTimeout(()=>{try{r.stop()}catch(e){}},7000)}catch(e){srDead=true;fin({err:"blocked"})}}})}
+const norm=s=>String(s).toLowerCase().replace(/[’']/g,"").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+function lev(a,b){const m=[];for(let i=0;i<=a.length;i++){m[i]=[i]}for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+function closeTo(h,t){h=norm(h);t=norm(t);if(!h)return false;if(h===t||(" "+h+" ").includes(" "+t+" "))return true;if(1-lev(h,t)/Math.max(h.length,t.length)>=.75)return true;const tw=t.split(" ");if(tw.length>1){const hw=new Set(h.split(" "));return tw.filter(x=>hw.has(x)).length/tw.length>=.8}return false}
+function startSpeak(m){run={m,type:"speak",items:shuffle(m.data).slice(0,6),i:0,first:0};showSpeak(true)}
+function showSpeak(isFirst,keep){const it=run.items[run.i];if(!keep)run.tries=0;run.done=false;run.busy=false;const mode=micMode();
+  const pt=mode?"Escute, toque no microfone e fale em inglês.":"Escute e repita em voz alta.";
+  luna(isFirst?"Say it with me!":"Your turn!",pt,(isFirst?[E("Say it with me!"),P(pt)]:[]).concat([E(it.en)]));lastSaid=[E(it.en)];
+  $("#view").innerHTML='<div class="prog"><i style="width:'+(run.i/run.items.length*100)+'%"></i></div>'+(mode?"":'<p class="note">O microfone não está disponível neste aparelho ou navegador. Fale em voz alta e toque em "Falei!".</p>')+'<div class="qcard"><div class="em">'+it.em+'</div><div class="q">'+esc(it.en)+'</div><div class="sub">'+esc(it.pt)+'</div><div class="hear"><button data-hear="1">🔊 Ouvir</button><button data-hear="slow">🐢 Devagar</button></div></div><div class="heard" id="heard"></div><div class="next" id="next">'+(mode?'<button class="big mic" id="mic">🎤 Falar</button>':'<button class="big mint" id="selfOk">Falei! ✔</button>')+"</div>"}
+function speakNext(){const last=run.i===run.items.length-1;$("#next").innerHTML='<button class="big mint" id="nextS">'+(last?"Ver minhas estrelas ⭐":"Next ➜")+"</button>";document.querySelector(".prog i").style.width=((run.i+1)/run.items.length*100)+"%"}
+async function tapMic(btn){if(!run||run.busy||run.done)return;run.busy=true;const my=run.i,it=run.items[my];
+  btn.classList.add("on");btn.textContent="👂 Estou ouvindo…";$("#heard").textContent="";
+  luna("I'm listening!","Pode falar: "+it.en,null);
+  const r=await listen(t=>{const h=$("#heard");if(h)h.textContent="Eu ouvi: "+t});
+  if(!run||run.type!=="speak"||run.i!==my)return;run.busy=false;
+  if(r.err){if(!micMode()){showSpeak(false,true);return}btn.classList.remove("on");btn.textContent="🎤 Falar";const m="Não consegui abrir o microfone. Toque de novo e permita o uso do microfone.";luna("Oops!",m,[P(m)]);return}
+  btn.classList.remove("on");btn.textContent="🎤 Falar de novo";
+  const heard=(r.alts||[]).map(x=>String(x||"").trim()).filter(Boolean);
+  if(!heard.length){const m="Não ouvi nada! Fale mais pertinho do celular, sem vergonha.";luna("I can't hear you!",m,[P(m)]);return}
+  run.tries++;
+  if(heard.some(x=>closeTo(x,it.en))){run.done=true;if(run.tries===1)run.first++;ding();$("#heard").textContent="Eu ouvi: "+it.en+" ✔";const pr=pick(PRAISE);luna(pr,"Eu entendi direitinho: "+it.en,[E(pr),E(it.en)],"happy");speakNext();return}
+  giggle();const hw=heard[0];
+  if(run.tries>=3){run.done=true;const m="Essa é difícil mesmo, e você tentou três vezes. Que coragem! Escute mais uma vez e vamos para a próxima.";luna("Good try!",m,null,"laugh");speakNext();await wait(850);if(run&&run.type==="speak"&&run.i===my)say([P(m),S(it.en)]);return}
+  const j=pick(HEAR_J);luna("Hee hee!",j[0]+" \""+hw+"\"! "+j[1],null,"laugh");lastSaid=[E(it.en)];
+  await wait(850);if(run&&run.type==="speak"&&run.i===my&&!run.busy)say([P(j[0]),E(hw),P(j[1]),S(it.en)])}
+function selfOk(){if(run.done)return;run.done=true;run.first++;ding();const pr=pick(PRAISE);luna(pr,"Muito bem! Repita mais uma vez: "+run.items[run.i].en,[E(pr),E(run.items[run.i].en)],"happy");speakNext()}
+function nextSpeak(){run.i++;if(run.i>=run.items.length){const pct=run.first/run.items.length;finish(run.m,pct>=.67?3:pct>=.34?2:1,run.first+" de "+run.items.length+" faladas certinho de primeira.")}else showSpeak(false)}
+
+/* ================= EVENTS ================= */
+document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;audio();const d=t.dataset;
+  if(t.id==="back"||d.home){home(false);return}
+  if(t.id==="mute"){muted=!muted;t.textContent=muted?"🔇":"🔊";if(muted)stopVoice();else say([E("Hello!")]);return}
+  if(t.id==="lunaBtn"){pop();if(lastSaid.length)say(lastSaid);return}
+  if(d.m){start(d.m);return}
+  if(!run)return;
+  if(d.fc!==undefined)tapLearn(+d.fc,t);
+  else if(t.id==="learnDone")finish(run.m,3,"Você ouviu todas as palavras!");
+  else if(d.hear){if(run.busy)return;const it=run.items[run.i];say([d.hear==="slow"?S(it.say):E(it.say)])}
+  else if(d.o!==undefined)tapMC(+d.o,t);
+  else if(t.id==="nextBtn")nextMC();
+  else if(d.mc!==undefined)tapMem(+d.mc,t);
+  else if(d.hint){run.missed=true;say([S(run.items[run.i].en)])}
+  else if(d.pk!==undefined&&!run.done){pop();run.ans.push(run.pool.splice(+d.pk,1)[0]);drawBuild()}
+  else if(d.un!==undefined&&!run.done){pop();run.pool.push(run.ans.splice(+d.un,1)[0]);drawBuild()}
+  else if(t.id==="check")checkBuild();
+  else if(t.id==="mic")tapMic(t);
+  else if(t.id==="selfOk")selfOk();
+  else if(t.id==="nextS")nextSpeak();
+  else if(t.id==="nextB")nextBuild();
+});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){stopVoice();try{if(dict&&dictH)dict.stop().catch(()=>{})}catch(e){}}});
+if(save.seen)home(false);else welcome();
+</script>
+</body>
+</html>
