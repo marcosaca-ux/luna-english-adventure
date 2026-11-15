@@ -128,6 +128,42 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--grape);outline-
 .line .chip{background:#f1edff;border-color:#d6cbf6}
 .ptline{text-align:center;color:var(--soft);font-weight:700;font-size:15px}
 
+/* story */
+.tv{background:#2e2a55;border-radius:26px;padding:10px;box-shadow:0 6px 0 rgba(46,42,85,.25)}
+.screen{height:200px;border-radius:18px;display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:0 8px 26px;position:relative;overflow:hidden}
+.screen::after{content:"";position:absolute;left:0;right:0;bottom:0;height:24px;background:rgba(46,42,85,.13)}
+.bg-hospital{background:linear-gradient(180deg,#d6efff,#f6fcff)}
+.bg-park{background:linear-gradient(180deg,#aee0ff,#d5f6c2)}
+.bg-home{background:linear-gradient(180deg,#ffe3cc,#fff6e6)}
+.bg-sky{background:linear-gradient(180deg,#8fcbff,#e3f5ff)}
+.bg-beach{background:linear-gradient(180deg,#a5ddff 0 58%,#ffe5a0 58% 100%)}
+.bg-world{background:linear-gradient(180deg,#c6d6ff,#f0e6ff)}
+.bg-end{background:linear-gradient(180deg,#7a5cd6,#b79df5)}
+.act{font-size:60px;line-height:1;position:relative;z-index:1;display:inline-block;animation-fill-mode:both}
+.a-in{animation:sIn .7s ease-out both}
+.a-hop{animation:sHop .7s ease-in-out infinite}
+.a-shake{animation:sShake .35s ease-in-out infinite alternate}
+.a-float{animation:sFloat 2s ease-in-out infinite}
+.a-spin{animation:sSpin 2.4s linear infinite}
+.a-zoom{animation:sZoom 1.1s ease-in-out infinite}
+.a-pop{animation:sPop .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes sIn{from{transform:translateX(-160px)}to{transform:none}}
+@keyframes sHop{50%{transform:translateY(-22px)}}
+@keyframes sShake{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+@keyframes sFloat{50%{transform:translateY(-34px)}}
+@keyframes sSpin{to{transform:rotate(360deg)}}
+@keyframes sZoom{50%{transform:scale(1.25)}}
+@keyframes sPop{from{transform:scale(.2)}to{transform:none}}
+.cap{background:var(--card);border-radius:16px;margin-top:10px;padding:12px;text-align:center;min-height:98px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.cen{font-family:var(--display);font-weight:800;font-size:21px;line-height:1.2;text-wrap:balance}
+.cen mark{background:#fff0a8;color:var(--grape);border-radius:6px;padding:0 4px}
+.cpt{color:var(--soft);font-weight:700;font-size:15px}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.dots i{width:9px;height:9px;border-radius:50%;background:#5b568c}
+.dots i.on{background:var(--sun)}
+.skip{display:block;margin:10px auto 0;color:var(--soft);font-weight:800;min-height:44px;text-decoration:underline}
+.next .big+.big{margin-top:10px}
+
 /* speak */
 .mic{background:var(--berry);border-bottom-color:#b53a61}
 .mic.on{animation:pulse 1s infinite;background:#c4426c}
@@ -137,6 +173,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--grape);outline-
 
 /* done */
 .done{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:22px 16px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.done .big+.big{margin-top:0}
 .done .stars{font-size:52px;letter-spacing:6px;color:var(--sun)}
 .done .stars .off{color:var(--line)}
 .done h2{font-family:var(--display);font-size:28px;margin:0;line-height:1.1}
@@ -318,6 +355,76 @@ const BUILD_J=["Essa frase virou uma salada de palavras! Vamos arrumar o prato?"
 const MEM_J=["Minha memória também é de peixinho dourado! Vamos de novo.","Essas cartas são danadinhas, ficam trocando de lugar! Brincadeira.","Ops! Esse par não se conhece. Procure o amigo certo."];
 const PRAISE=["Great job!","Awesome!","Perfect!","You got it!","Well done!","Super!","Yes! That's right!","Fantastic!"];
 
+/* Short original stories that introduce each topic before the challenge. *word* = highlighted key word. */
+const sc=(a,en,pt,bg)=>({a,en,pt,bg});
+const STORIES={
+ s7words:{title:"A busy day at the hospital",bg:"hospital",scenes:[
+  sc([["🏥","a-pop"],["🐱","a-hop"]],"Welcome to the *hospital*!","Bem-vinda ao hospital!"),
+  sc([["🐶","a-in"],["🤕","a-shake"]],"Pipoca has a *headache*.","O Pipoca está com dor de cabeça."),
+  sc([["🐰","a-in"],["👂","a-zoom"]],"Bunny has an *earache*.","A Coelhinha está com dor de ouvido."),
+  sc([["🐊","a-in"],["🦷","a-shake"]],"Croc has a *toothache*. So many teeth!","O Croco está com dor de dente. Quantos dentes!"),
+  sc([["🐻","a-in"],["🍯","a-pop"],["🤢","a-shake"]],"Bear has a *stomachache*. Too much honey!","O Urso está com dor de barriga. Mel demais!"),
+  sc([["🦊","a-in"],["🤧","a-shake"],["😷","a-pop"]],"Fox has a *cold* and a *cough*. Achoo!","A Raposa está resfriada e com tosse. Atchim!"),
+  sc([["🦉","a-hop"],["🩺","a-pop"],["💉","a-pop"]],"The *doctor* and the *nurse* help everyone!","A médica e a enfermeira ajudam todo mundo!")]},
+ s7reg:{title:"Yesterday at the park",bg:"park",scenes:[
+  sc([["☀️","a-spin"],["🐶","a-hop"],["⚽","a-pop"]],"Yesterday, Pipoca *played* in the park.","Ontem, o Pipoca brincou no parque."),
+  sc([["🌳","a-pop"],["🐶","a-float"]],"He *climbed* a big tree.","Ele subiu numa árvore grande."),
+  sc([["🐶","a-float"],["⬆️","a-zoom"]],"He *jumped* up high!","Ele pulou bem alto!"),
+  sc([["💦","a-zoom"],["🐶","a-shake"],["💦","a-zoom"]],"He *landed* in the water. Splash!","Ele caiu na água. Tchibum!"),
+  sc([["🐶","a-hop"],["📣","a-shake"]],"He *shouted*: Again! Again!","Ele gritou: De novo! De novo!"),
+  sc([["⏰","a-shake"],["✨","a-zoom"]],"Yesterday: verb + *ed*. Played, jumped, landed!","Ontem: verbo + ed.")]},
+ s7irr:{title:"Bear and the honey",bg:"home",scenes:[
+  sc([["🌅","a-pop"],["🐻","a-hop"]],"Bear *woke up* early.","O Urso acordou cedo."),
+  sc([["🐻","a-zoom"],["🍯","a-pop"],["🍯","a-pop"],["🍯","a-pop"]],"He *ate* all the honey.","Ele comeu todo o mel."),
+  sc([["🐻","a-shake"],["🤢","a-pop"]],"He *felt* bad. He *had* a stomachache.","Ele se sentiu mal. Ficou com dor de barriga."),
+  sc([["🐻","a-in"],["🚗","a-in"],["🏥","a-pop"]],"He *went* to the doctor.","Ele foi ao médico."),
+  sc([["🦉","a-hop"],["💊","a-pop"],["🐻","a-shake"]],"The doctor *gave* him some medicine.","A médica deu um remédio para ele."),
+  sc([["🦉","a-hop"],["💬","a-zoom"]],"She *said*: No more honey today!","Ela disse: Chega de mel por hoje!")]},
+ s7health:{title:"Bunny and Croc",bg:"park",scenes:[
+  sc([["🐰","a-hop"],["🥕","a-pop"],["🍎","a-pop"]],"Bunny eats fruit and vegetables. That's *healthy*!","A Coelhinha come frutas e verduras. É saudável!"),
+  sc([["🐰","a-in"],["🚴","a-in"]],"She rides her bike. *Healthy*!","Ela anda de bicicleta. Saudável!"),
+  sc([["🐊","a-zoom"],["🍟","a-pop"],["🍭","a-pop"]],"Croc eats chips and candy all day. *Unhealthy*!","O Croco come batata chips e doce o dia todo. Não é saudável!"),
+  sc([["🐊","a-shake"],["🎮","a-shake"],["🌙","a-float"]],"He plays games all night. *Unhealthy*!","Ele joga a noite inteira. Não é saudável!"),
+  sc([["🐰","a-float"],["😴","a-zoom"],["🐊","a-float"]],"Now they get good sleep. *Healthy*!","Agora eles dormem bem. Saudável!")]},
+ s7doc:{title:"At the doctor's",bg:"hospital",scenes:[
+  sc([["🐶","a-in"],["👋","a-shake"],["🦉","a-hop"]],"Good morning, Doctor!","Bom dia, doutora!"),
+  sc([["🦉","a-hop"],["❓","a-zoom"]],"*What's the matter?*","Qual é o problema?"),
+  sc([["🐶","a-shake"],["🦶","a-zoom"]],"I have a *pain* in my foot.","Estou com dor no pé."),
+  sc([["🦉","a-hop"],["❓","a-zoom"]],"*What happened?*","O que aconteceu?"),
+  sc([["🐶","a-hop"],["⚽","a-in"],["🪨","a-pop"]],"I kicked a ball... but it was a rock!","Chutei uma bola... mas era uma pedra!"),
+  sc([["🦉","a-hop"],["🛏️","a-pop"],["💧","a-zoom"]],"You have to *stay in bed* and drink lots of water.","Você tem que ficar na cama e beber muita água.")]},
+ s8countries:{title:"Luna travels the world",bg:"sky",scenes:[
+  sc([["🐱","a-hop"],["✈️","a-in"],["🌍","a-spin"]],"Luna travels *around the world*!","A Luna viaja pelo mundo!"),
+  sc([["🇧🇷","a-pop"],["⚽","a-hop"]],"This is *Brazil*. Home, sweet home!","Este é o Brasil. Lar, doce lar!"),
+  sc([["🇪🇬","a-pop"],["🐪","a-in"]],"This is *Egypt*. Hello, camel!","Este é o Egito. Olá, camelo!"),
+  sc([["🇦🇺","a-pop"],["🦘","a-hop"]],"This is *Australia*. Boing, boing!","Esta é a Austrália. Boing, boing!"),
+  sc([["🇨🇳","a-pop"],["🐼","a-zoom"]],"This is *China*. Hi, panda!","Esta é a China. Oi, panda!"),
+  sc([["🇲🇽","a-pop"],["🌮","a-shake"]],"This is *Mexico*. Yummy tacos!","Este é o México. Que tacos gostosos!"),
+  sc([["🇹🇷","a-pop"],["🦃","a-shake"]],"This is *Turkey*... not that turkey!","Esta é a Turquia... não esse peru!")]},
+ s8didnt:{title:"Croc's funny vacation",bg:"beach",scenes:[
+  sc([["🐊","a-in"],["🏖️","a-pop"]],"Croc *went* to the beach.","O Croco foi à praia."),
+  sc([["🌧️","a-float"],["🐊","a-shake"]],"But he *didn't swim*. It was cold!","Mas ele não nadou. Estava frio!"),
+  sc([["🐊","a-shake"],["🍦","a-float"],["🐦","a-float"]],"He *didn't eat* ice cream. A bird took it!","Ele não tomou sorvete. Um passarinho levou!"),
+  sc([["🐊","a-in"],["🦁","a-zoom"],["💤","a-float"]],"He *didn't see* the lions. They were sleeping.","Ele não viu os leões. Eles estavam dormindo."),
+  sc([["🐊","a-hop"],["😂","a-zoom"]],"He *didn't have* fun... but it is a funny story!","Ele não se divertiu... mas a história é engraçada!"),
+  sc([["🙅","a-shake"],["✨","a-zoom"]],"*Didn't* + verb: didn't go, didn't see, didn't eat.","Didn't + verbo normal.")]},
+ s8didq:{title:"Bunny is back!",bg:"home",scenes:[
+  sc([["🐰","a-in"],["🧳","a-in"],["🐶","a-hop"]],"Bunny is back from vacation!","A Coelhinha voltou das férias!"),
+  sc([["🐶","a-hop"],["❓","a-zoom"],["🐰","a-hop"]],"*Did* you have fun? Yes, I *did*!","Você se divertiu? Sim!"),
+  sc([["✈️","a-float"],["🐰","a-shake"],["🥕","a-in"]],"*Did* you go by plane? No, I *didn't*. I went by carrot car!","Você foi de avião? Não. Fui de carro-cenoura!"),
+  sc([["🐶","a-hop"],["🏨","a-pop"]],"*Where* did you stay? In a hotel.","Onde você ficou? Num hotel."),
+  sc([["🐰","a-hop"],["🐇","a-hop"],["🐇","a-hop"]],"*Who* did you go with? My mom and dad.","Com quem você foi? Com minha mãe e meu pai."),
+  sc([["🐶","a-zoom"],["💌","a-pop"],["🐰","a-shake"]],"Did you send me a postcard? Sorry! I forgot!","Você me mandou um cartão-postal? Desculpa! Esqueci!")]},
+ s8won:{title:"Wonders of the world",bg:"world",scenes:[
+  sc([["🗺️","a-pop"],["✨","a-zoom"],["🐱","a-hop"]],"The world is full of *wonders*!","O mundo é cheio de maravilhas!"),
+  sc([["🏯","a-pop"],["🇨🇳","a-float"]],"The Great Wall is in *China*. It is very long!","A Grande Muralha fica na China. É muito comprida!"),
+  sc([["🕌","a-pop"],["🇮🇳","a-float"]],"The Taj Mahal is in *India*. It is beautiful!","O Taj Mahal fica na Índia. É lindo!"),
+  sc([["🦁","a-zoom"],["🇪🇬","a-float"]],"The Sphinx is in *Egypt*. It is very old!","A Esfinge fica no Egito. É muito antiga!"),
+  sc([["🏔️","a-pop"],["❄️","a-spin"]],"Mount Everest is in *Asia*. It is very tall!","O Monte Everest fica na Ásia. É muito alto!"),
+  sc([["🌳","a-pop"],["🦜","a-float"],["🇧🇷","a-float"]],"And the Amazon is in *Brazil*. It is very big!","E a Amazônia fica no Brasil. É muito grande!")]}
+};
+const STORY_OF={"7learn":"s7words","7listen":"s7words","7speak":"s7words","7mem":"s7words","7reg":"s7reg","7irr":"s7irr","7health":"s7health","7doc":"s7doc","7build":"s7reg","8learn":"s8countries","8listen":"s8countries","8speak":"s8countries","8mem":"s8countries","8didnt":"s8didnt","8didq":"s8didq","8build":"s8didq","8won":"s8won"};
+
 const WORLDS=[
  {id:"w7",name:"In the Hospital",unit:"Unit 7",desc:"Saúde, médico e o que aconteceu ontem.",missions:[
   {id:"7learn",ic:"🩹",t:"Palavras do hospital",s:"Listen and say",type:"learn",data:HEALTH},
@@ -419,19 +526,44 @@ function home(greet){run=null;stopVoice();setBar("Luna English Adventure","Ingl�
   luna(en,pt,greet?[E("Hello"+nm()+"! I'm Luna. Let's play!"),P(first?"Escolha uma missão para começar.":"Qual missão vamos jogar agora?")]:null,greet?"happy":null);
   if(!greet)lastSaid=[E("Hello"+nm()+"! Let's play!"),P("Escolha uma missão.")];
   $("#view").innerHTML=WORLDS.map(wd=>'<section class="world '+wd.id+'"><h2>'+esc(wd.name)+" <span>"+wd.unit+"</span></h2><p>"+esc(wd.desc)+'</p><div class="tiles">'+wd.missions.map(m=>{const s=save.stars[m.id]||0;return '<button class="tile'+(s?" done":"")+'" data-m="'+m.id+'"><span class="ic">'+m.ic+"</span><b>"+esc(m.t)+"</b><i>"+esc(m.s)+'</i><span class="st" aria-label="'+s+' de 3 estrelas">'+starStr(s)+"</span></button>"}).join("")+"</div></section>").join("")+
-   '<p class="foot">Para os pais: a Luna fala em inglês com voz calma e explica em português. Se a voz não sair, confira o volume e o botão 🔊 lá em cima. Nas missões com 🎤 a criança fala e a Luna escuta; o aparelho vai pedir permissão para usar o microfone. As estrelas ficam guardadas neste aparelho.</p>';
+   '<p class="foot">Para os pais: antes de cada desafio novo passa uma historinha animada sobre o assunto. A Luna fala em inglês com voz calma e explica em português. Se a voz não sair, confira o volume e o botão 🔊 lá em cima. Nas missões com 🎤 a criança fala e a Luna escuta; o aparelho vai pedir permissão para usar o microfone. As estrelas ficam guardadas neste aparelho.</p>';
   window.scrollTo(0,0)}
 
 function findMission(id){for(const wd of WORLDS)for(const m of wd.missions)if(m.id===id)return m}
-function start(id){const m=findMission(id);if(!m)return;audio();stopVoice();setBar(m.t,m.s,true);window.scrollTo(0,0);
+function start(id,forceStory){const m=findMission(id);if(!m)return;audio();stopVoice();window.scrollTo(0,0);
+  const sid=STORY_OF[m.id],st=STORIES[sid];
+  if(st&&(forceStory||!(save.st&&save.st[sid])))playStory(m,st,sid);else begin(m)}
+function begin(m){stopVoice();setBar(m.t,m.s,true);window.scrollTo(0,0);
   ({learn:startLearn,listen:startListen,memory:startMemory,mc:startMC,build:startBuild,speak:startSpeak})[m.type](m)}
+
+/* ---------- story time: animated scenes narrated by Luna ---------- */
+function storySeen(){if(run&&run.sid){save.st=save.st||{};save.st[run.sid]=true;persist()}}
+function playStory(m,st,sid){run={m,type:"story",st,sid,i:-1};setBar(st.title,"Story time",true);
+  luna("Story time!","Assista à história. Depois vem o desafio!",null);
+  $("#view").innerHTML='<div class="tv"><div class="screen" id="scr"></div><div class="cap"><div class="cen" id="cen"></div><div class="cpt" id="cpt"></div></div><div class="dots" id="dots"></div></div><div class="next" id="next"></div><button class="skip" id="skipStory">Pular a história ⏭</button>';
+  nextScene()}
+async function nextScene(){if(!run||run.type!=="story")return;const st=run.st,i=++run.i;
+  if(i>=st.scenes.length){endStory();return}
+  const s=st.scenes[i],scr=$("#scr");scr.className="screen bg-"+(s.bg||st.bg);
+  scr.innerHTML=s.a.map((x,n)=>'<span class="act '+x[1]+'" style="animation-delay:'+(n*.22)+'s">'+x[0]+"</span>").join("");
+  $("#cen").innerHTML=esc(s.en).replace(/\*(.+?)\*/g,"<mark>$1</mark>");$("#cpt").textContent=s.pt;
+  $("#dots").innerHTML=st.scenes.map((_,n)=>'<i class="'+(n<=i?"on":"")+'"></i>').join("");
+  $("#next").innerHTML='<button class="big ghost" id="sceneNext">Next ➜</button>';
+  const plain=s.en.replace(/\*/g,""),t0=Date.now();lastSaid=[E(plain)];
+  await say([E(plain)]);await wait(Math.max(900,1500+plain.length*45-(Date.now()-t0)));
+  if(run&&run.type==="story"&&run.st===st&&run.i===i)nextScene()}
+function endStory(){storySeen();const scr=$("#scr");scr.className="screen bg-end";scr.innerHTML='<span class="act a-zoom">🎬</span><span class="act a-hop">🐱</span><span class="act a-spin">⭐</span>';
+  $("#cen").textContent="The end!";$("#cpt").textContent="Agora é a sua vez!";{const sk=$("#skipStory");if(sk)sk.remove()}
+  $("#next").innerHTML='<button class="big mint" id="storyGo">Começar o desafio ▶</button><button class="big ghost" id="storyAgain">Ver a história de novo 🔁</button>';
+  luna("Your turn!","Gostou da história? Agora vamos ao desafio!",[E("The end! Now it's your turn!")],"happy")}
+
 
 function finish(m,stars,line){stopVoice();const old=save.stars[m.id]||0;if(stars>old){save.stars[m.id]=stars;persist()}
   $("#total").textContent=totalStars();run=null;fanfare();confetti();
   const en=stars===3?"You did it"+nm()+"! Three stars!":stars===2?"Good job"+nm()+"! Two stars!":"Nice try"+nm()+"! One star!";
   const pt=stars===3?"Perfeito! Você é uma estrela!":stars===2?"Muito bem! Jogue de novo para ganhar a terceira estrela.":"Você conseguiu chegar ao fim! Jogue de novo para ganhar mais estrelas.";
   luna(en,pt,[E(en),P(pt)],"happy");
-  $("#view").innerHTML='<div class="done"><div class="stars">'+starStr(stars)+"</div><h2>"+esc(m.t)+"</h2><p>"+esc(line||"Missão completa!")+'</p><button class="big mint" data-m="'+m.id+'">Jogar de novo 🔁</button><button class="big ghost" data-home="1">Voltar ao mapa 🗺️</button></div>'}
+  $("#view").innerHTML='<div class="done"><div class="stars">'+starStr(stars)+"</div><h2>"+esc(m.t)+"</h2><p>"+esc(line||"Missão completa!")+'</p><button class="big mint" data-m="'+m.id+'">Jogar de novo 🔁</button>'+(STORY_OF[m.id]?'<button class="big ghost" data-story="'+m.id+'">Ver a história 🎬</button>':"")+'<button class="big ghost" data-home="1">Voltar ao mapa 🗺️</button></div>'}
 
 function confetti(){const c=$("#conf");c.innerHTML="";const em=["⭐","🌟","💜","🎉","✨","🌙"];for(let i=0;i<22;i++){const s=document.createElement("span");s.textContent=pick(em);s.style.left=Math.random()*100+"%";s.style.animationDuration=(2+Math.random()*2)+"s";s.style.animationDelay=Math.random()*.8+"s";c.appendChild(s)}setTimeout(()=>{c.innerHTML=""},5000)}
 
@@ -545,7 +677,9 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="mute"){muted=!muted;t.textContent=muted?"🔇":"🔊";if(muted)stopVoice();else say([E("Hello!")]);return}
   if(t.id==="lunaBtn"){pop();if(lastSaid.length)say(lastSaid);return}
   if(d.m){start(d.m);return}
+  if(d.story){start(d.story,true);return}
   if(!run)return;
+  if(run.type==="story"){if(t.id==="sceneNext"){stopVoice();nextScene()}else if(t.id==="skipStory"){const m=run.m;storySeen();begin(m)}else if(t.id==="storyGo")begin(run.m);else if(t.id==="storyAgain")playStory(run.m,run.st,run.sid);return}
   if(d.fc!==undefined)tapLearn(+d.fc,t);
   else if(t.id==="learnDone")finish(run.m,3,"Você ouviu todas as palavras!");
   else if(d.hear){if(run.busy)return;const it=run.items[run.i];say([d.hear==="slow"?S(it.say):E(it.say)])}
